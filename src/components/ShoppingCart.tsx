@@ -1,7 +1,7 @@
 // src/components/ShoppingCart.tsx
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "../store";
+import type { RootState, AppDispatch } from "../store";
 import { removeFromCart } from "../features/cart/cartSlice";
 
 interface ShoppingCartProps {

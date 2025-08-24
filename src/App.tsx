@@ -1,19 +1,11 @@
 // src/App.tsx
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-
-interface Product {
-  id: number;
-  title: string;
-  price: number;
-  image: string;
-  category: string;
-  description: string;
-  rating: {
-    rate: number;
-    count: number;
-  };
-}
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "./store";
+import { addToCart } from "./features/cart/cartSlice";
+import type { Product } from "./features/cart/cartSlice";
+import ShoppingCart from "./components/ShoppingCart";
 
 // Fetch all products or by category
 const fetchProducts = async (category?: string): Promise<Product[]> => {
@@ -35,6 +27,10 @@ const fetchCategories = async (): Promise<string[]> => {
 
 const App: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
+  const [showCart, setShowCart] = useState(false);
+  
+  const dispatch = useDispatch<AppDispatch>();
+  const cartItems = useSelector((state: RootState) => state.cart.items);
 
   // Fetch categories
   const { data: categories } = useQuery<string[]>({
@@ -53,7 +49,24 @@ const App: React.FC = () => {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>Products + Categories</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h1>Products + Categories</h1>
+        <button 
+          onClick={() => setShowCart(!showCart)}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#007bff",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer"
+          }}
+        >
+          Cart ({cartItems.length})
+        </button>
+      </div>
+
+      <ShoppingCart visible={showCart} onClose={() => setShowCart(false)} />
 
       {/* Category Filter */}
       <div style={{ marginTop: "20px" }}>
@@ -97,12 +110,26 @@ const App: React.FC = () => {
                   "https://via.placeholder.com/80";
               }}
             />
-            <div>
+            <div style={{ flex: 1 }}>
               <p>{product.title}</p>
               <p>💲{product.price}</p>
               <p>📦 {product.category}</p>
               <p>{product.description}</p>
               <p>⭐ {product.rating?.rate} ({product.rating?.count} reviews)</p>
+              <button
+                onClick={() => dispatch(addToCart(product))}
+                style={{
+                  marginTop: "10px",
+                  padding: "5px 15px",
+                  backgroundColor: "#28a745",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer"
+                }}
+              >
+                Add to Cart
+              </button>
             </div>
           </li>
         ))}
