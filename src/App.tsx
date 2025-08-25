@@ -31,6 +31,9 @@ const App: React.FC = () => {
   
   const dispatch = useDispatch<AppDispatch>();
   const cartItems = useSelector((state: RootState) => state.cart.items);
+  
+  // Calculate total quantity of all items
+  const totalCartItems = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   // Fetch categories
   const { data: categories } = useQuery<string[]>({
@@ -62,7 +65,7 @@ const App: React.FC = () => {
             cursor: "pointer"
           }}
         >
-          Cart ({cartItems.length})
+          Cart ({totalCartItems})
         </button>
       </div>
 

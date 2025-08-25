@@ -28,7 +28,29 @@ interface CartState {
   items: CartItem[];
 }
 
-const initialState: CartState = { items: [] };
+// Load cart from sessionStorage
+const loadCartFromStorage = (): CartItem[] => {
+  try {
+    const cartData = sessionStorage.getItem('cart');
+    return cartData ? JSON.parse(cartData) : [];
+  } catch (error) {
+    console.error('Error loading cart from sessionStorage:', error);
+    return [];
+  }
+};
+
+// Save cart to sessionStorage
+const saveCartToStorage = (items: CartItem[]) => {
+  try {
+    sessionStorage.setItem('cart', JSON.stringify(items));
+  } catch (error) {
+    console.error('Error saving cart to sessionStorage:', error);
+  }
+};
+
+const initialState: CartState = { 
+  items: loadCartFromStorage() 
+};
 
 const cartSlice = createSlice({
   name: "cart",
@@ -47,12 +69,18 @@ const cartSlice = createSlice({
           quantity: 1,
         });
       }
+      saveCartToStorage(state.items);
     },
     removeFromCart: (state, action: PayloadAction<number>) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
+      saveCartToStorage(state.items);
+    },
+    clearCart: (state) => {
+      state.items = [];
+      saveCartToStorage(state.items);
     },
   },
 });
 
-export const { addToCart, removeFromCart } = cartSlice.actions;
+export const { addToCart, removeFromCart, clearCart } = cartSlice.actions;
 export default cartSlice.reducer;
