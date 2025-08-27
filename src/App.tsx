@@ -1,142 +1,143 @@
-// src/App.tsx
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, RootState } from "./store";
-import { addToCart } from "./features/cart/cartSlice";
-import type { Product } from "./features/cart/cartSlice";
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "./store";
 import ShoppingCart from "./components/ShoppingCart";
-
-// Fetch all products or by category
-const fetchProducts = async (category?: string): Promise<Product[]> => {
-  const url = category
-    ? `https://fakestoreapi.com/products/category/${category}`
-    : "https://fakestoreapi.com/products";
-  console.log("Fetching products from:", url);
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("Failed to fetch products");
-  return res.json();
-};
-
-// Fetch categories
-const fetchCategories = async (): Promise<string[]> => {
-  const res = await fetch("https://fakestoreapi.com/products/categories");
-  if (!res.ok) throw new Error("Failed to fetch categories");
-  return res.json();
-};
+import ProductList from "./components/Products/ProductList";
+import LoginForm from "./components/Auth/LoginForm";
+import UserProfile from "./components/User/UserProfile";
+import OrderHistory from "./components/Orders/OrderHistory";
+import './components/Auth/auth.css';
+import './components/User/user.css';
+import './components/Products/products.css';
+import './components/Orders/orders.css';
 
 const App: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [showCart, setShowCart] = useState(false);
+  const [currentView, setCurrentView] = useState<'products' | 'profile' | 'login' | 'orders'>('products');
   
-  const dispatch = useDispatch<AppDispatch>();
   const cartItems = useSelector((state: RootState) => state.cart.items);
+  const { user, loading } = useSelector((state: RootState) => state.auth);
   
   // Calculate total quantity of all items
   const totalCartItems = cartItems.reduce((total, item) => total + item.quantity, 0);
 
-  // Fetch categories
-  const { data: categories } = useQuery<string[]>({
-    queryKey: ["categories"],
-    queryFn: fetchCategories,
-  });
+  // Auto-redirect to products when user logs in successfully
+  useEffect(() => {
+    if (user && currentView === 'login') {
+      setCurrentView('products');
+    }
+  }, [user, currentView]);
 
-  // Fetch products
-  const { data: products, isLoading, error } = useQuery<Product[]>({
-    queryKey: ["products", selectedCategory],
-    queryFn: () => fetchProducts(selectedCategory),
-  });
-
-  if (isLoading) return <p>Loading products...</p>;
-  if (error) return <p>Error fetching products</p>;
+  if (loading) {
+    return <div style={{ padding: "20px", textAlign: "center" }}>Loading...</div>;
+  }
 
   return (
-    <div style={{ padding: "20px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h1>Products + Categories</h1>
-        <button 
-          onClick={() => setShowCart(!showCart)}
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer"
-          }}
-        >
-          Cart ({totalCartItems})
-        </button>
-      </div>
-
-      <ShoppingCart visible={showCart} onClose={() => setShowCart(false)} />
-
-      {/* Category Filter */}
-      <div style={{ marginTop: "20px" }}>
-        <label htmlFor="category">Filter by category: </label>
-        <select
-          id="category"
-          value={selectedCategory || ""}
-          onChange={(e) => setSelectedCategory(e.target.value || undefined)}
-        >
-          <option value="">All</option>
-          {categories?.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Products */}
-      <h2 style={{ marginTop: "20px" }}>Products</h2>
-      <ul style={{ listStyle: "none", padding: 0 }}>
-        {products?.map((product) => (
-          <li
-            key={product.id}
+    <div style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}>
+      {/* Navigation Header */}
+      <nav style={{
+        backgroundColor: "white",
+        padding: "1rem 2rem",
+        borderBottom: "1px solid #dee2e6",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+      }}>
+        <h1 style={{ margin: 0, color: "#333" }}>E-Commerce Store</h1>
+        
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <button
+            onClick={() => setCurrentView('products')}
             style={{
-              border: "1px solid #ccc",
-              marginBottom: "10px",
-              padding: "10px",
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
+              padding: "0.5rem 1rem",
+              backgroundColor: currentView === 'products' ? "#007bff" : "transparent",
+              color: currentView === 'products' ? "white" : "#007bff",
+              border: "1px solid #007bff",
+              borderRadius: "4px",
+              cursor: "pointer"
             }}
           >
-            <img
-              src={product.image}
-              alt={product.title}
-              width={80}
-              height={80}
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src =
-                  "https://via.placeholder.com/80";
-              }}
-            />
-            <div style={{ flex: 1 }}>
-              <p>{product.title}</p>
-              <p>💲{product.price}</p>
-              <p>📦 {product.category}</p>
-              <p>{product.description}</p>
-              <p>⭐ {product.rating?.rate} ({product.rating?.count} reviews)</p>
+            Products
+          </button>
+          
+          {user ? (
+            <>
               <button
-                onClick={() => dispatch(addToCart(product))}
+                onClick={() => setCurrentView('profile')}
                 style={{
-                  marginTop: "10px",
-                  padding: "5px 15px",
-                  backgroundColor: "#28a745",
-                  color: "white",
-                  border: "none",
+                  padding: "0.5rem 1rem",
+                  backgroundColor: currentView === 'profile' ? "#28a745" : "transparent",
+                  color: currentView === 'profile' ? "white" : "#28a745",
+                  border: "1px solid #28a745",
                   borderRadius: "4px",
                   cursor: "pointer"
                 }}
               >
-                Add to Cart
+                Profile
               </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+              <button
+                onClick={() => setCurrentView('orders')}
+                style={{
+                  padding: "0.5rem 1rem",
+                  backgroundColor: currentView === 'orders' ? "#ffc107" : "transparent",
+                  color: currentView === 'orders' ? "white" : "#ffc107",
+                  border: "1px solid #ffc107",
+                  borderRadius: "4px",
+                  cursor: "pointer"
+                }}
+              >
+                Orders
+              </button>
+              <span style={{ color: "#666" }}>Welcome, {user.email}</span>
+            </>
+          ) : (
+            <button
+              onClick={() => setCurrentView('login')}
+              style={{
+                padding: "0.5rem 1rem",
+                backgroundColor: currentView === 'login' ? "#17a2b8" : "transparent",
+                color: currentView === 'login' ? "white" : "#17a2b8",
+                border: "1px solid #17a2b8",
+                borderRadius: "4px",
+                cursor: "pointer"
+              }}
+            >
+              Login
+            </button>
+          )}
+          
+          <button 
+            onClick={() => setShowCart(!showCart)}
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: "#dc3545",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              position: "relative"
+            }}
+          >
+            Cart ({totalCartItems})
+          </button>
+        </div>
+      </nav>
+
+      <ShoppingCart visible={showCart} onClose={() => setShowCart(false)} />
+
+      {/* Main Content */}
+      <main>
+        {currentView === 'products' && <ProductList />}
+        {currentView === 'profile' && user && <UserProfile />}
+        {currentView === 'orders' && user && <OrderHistory />}
+        {currentView === 'login' && !user && <LoginForm />}
+        {(currentView === 'profile' || currentView === 'orders') && !user && (
+          <div style={{ padding: "2rem", textAlign: "center" }}>
+            Please log in to access this section.
+          </div>
+        )}
+      </main>
     </div>
   );
 };

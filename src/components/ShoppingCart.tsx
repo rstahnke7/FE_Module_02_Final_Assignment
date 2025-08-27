@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../store";
 import { removeFromCart, clearCart } from "../features/cart/cartSlice";
+import { createOrder } from "../lib/firestore";
+import { getProducts } from "../lib/firestore";
 
 interface ShoppingCartProps {
   visible: boolean;
@@ -13,20 +15,65 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ visible, onClose }) => {
   console.log("ShoppingCart component rendering, visible:", visible);
 
   const items = useSelector((state: RootState) => state.cart.items);
+  const { user } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch<AppDispatch>();
   const [showCheckoutSuccess, setShowCheckoutSuccess] = useState(false);
+  const [checkingOut, setCheckingOut] = useState(false);
 
   // Calculate totals
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
   const totalPrice = items.reduce((total, item) => total + (item.price * item.quantity), 0);
 
-  const handleCheckout = () => {
-    dispatch(clearCart());
-    setShowCheckoutSuccess(true);
-    setTimeout(() => {
-      setShowCheckoutSuccess(false);
-      onClose();
-    }, 2000);
+  const handleCheckout = async () => {
+    if (!user || items.length === 0) return;
+    
+    setCheckingOut(true);
+    
+    try {
+      // Get full product details from Firestore for each cart item
+      const allProducts = await getProducts();
+      const orderItems = items.map(cartItem => {
+        // Find matching product or create a basic product object
+        const product = allProducts.find(p => p.id === cartItem.id.toString()) || {
+          id: cartItem.id.toString(),
+          title: cartItem.title,
+          description: 'Product from cart',
+          price: cartItem.price,
+          category: 'unknown',
+          image: cartItem.image,
+          rating: { rate: 0, count: 0 },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        
+        return {
+          productId: product.id,
+          product: product,
+          quantity: cartItem.quantity,
+        };
+      });
+
+      // Create order in Firestore
+      await createOrder({
+        userId: user.uid,
+        items: orderItems,
+        totalAmount: totalPrice,
+        status: 'pending',
+      });
+
+      // Clear cart and show success
+      dispatch(clearCart());
+      setShowCheckoutSuccess(true);
+      setTimeout(() => {
+        setShowCheckoutSuccess(false);
+        onClose();
+      }, 2000);
+    } catch (error) {
+      console.error('Checkout failed:', error);
+      alert('Checkout failed. Please try again.');
+    } finally {
+      setCheckingOut(false);
+    }
   };
 
   console.log("ShoppingCart items from Redux:", items);
@@ -117,23 +164,38 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ visible, onClose }) => {
             );
           })}
           </ul>
-          <button 
-            onClick={handleCheckout}
-            style={{
-              width: "100%",
+          {user ? (
+            <button 
+              onClick={handleCheckout}
+              disabled={checkingOut}
+              style={{
+                width: "100%",
+                padding: "12px",
+                backgroundColor: checkingOut ? "#6c757d" : "#28a745",
+                color: "white",
+                border: "none",
+                borderRadius: "5px",
+                fontSize: "16px",
+                fontWeight: "bold",
+                cursor: checkingOut ? "not-allowed" : "pointer",
+                marginBottom: "10px"
+              }}
+            >
+              {checkingOut ? "Processing..." : `Checkout ($${totalPrice.toFixed(2)})`}
+            </button>
+          ) : (
+            <div style={{
               padding: "12px",
-              backgroundColor: "#28a745",
-              color: "white",
-              border: "none",
+              backgroundColor: "#f8f9fa",
+              border: "1px solid #dee2e6",
               borderRadius: "5px",
-              fontSize: "16px",
-              fontWeight: "bold",
-              cursor: "pointer",
-              marginBottom: "10px"
-            }}
-          >
-            Checkout (${totalPrice.toFixed(2)})
-          </button>
+              textAlign: "center",
+              marginBottom: "10px",
+              color: "#6c757d"
+            }}>
+              Please log in to checkout
+            </div>
+          )}
         </div>
       )}
       <button onClick={() => {
