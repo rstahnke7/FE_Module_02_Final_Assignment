@@ -2,6 +2,10 @@
 
 A complete Firebase-powered e-commerce application built with React, TypeScript, Redux Toolkit, and Firebase. Features full user authentication, product management, shopping cart functionality, and order tracking.
 
+## 🚀 Live Application
+
+**[View Live E-commerce Application](https://ecommerce-fakestore2-o8kt3ppri-richard-stahnkes-projects.vercel.app)**
+
 ## ✨ Features
 
 ### 🔐 User Authentication
