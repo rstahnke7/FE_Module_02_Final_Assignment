@@ -36,6 +36,13 @@ A complete Firebase-powered e-commerce application built with React, TypeScript,
 - **Loading States**: Visual feedback during async operations
 - **Error Handling**: Comprehensive error messages and validation
 
+### 🧪 Test-Driven Development (TDD)
+- **Unit Testing**: Comprehensive test coverage for components
+- **Integration Testing**: End-to-end cart functionality testing
+- **Jest & React Testing Library**: Modern testing framework setup
+- **Automated Testing**: CI/CD pipeline with automated test execution
+- **Test Coverage**: 41+ tests ensuring robust functionality
+
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 19 with TypeScript
@@ -43,6 +50,9 @@ A complete Firebase-powered e-commerce application built with React, TypeScript,
 - **Database**: Firebase Firestore
 - **Authentication**: Firebase Authentication
 - **Data Fetching**: TanStack React Query
+- **Testing**: Jest + React Testing Library
+- **CI/CD**: GitHub Actions
+- **Deployment**: Vercel
 - **Styling**: CSS with responsive design
 - **Build Tool**: Vite
 - **Package Manager**: npm
@@ -112,12 +122,22 @@ A complete Firebase-powered e-commerce application built with React, TypeScript,
 7. **Open your browser**
    Navigate to `http://localhost:5173/`
 
+8. **Run tests** (optional)
+   ```bash
+   npm test          # Run all tests
+   npm run test:watch # Run tests in watch mode
+   npm run test:coverage # Run with coverage report
+   ```
+
 ### Available Scripts
 
 - `npm run dev` - Start development server with hot reload
 - `npm run build` - Build for production (includes TypeScript compilation)
 - `npm run preview` - Preview production build locally
 - `npm run lint` - Run ESLint for code quality
+- `npm test` - Run test suite with Jest
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Run tests with coverage report
 
 ## 📱 How to Use
 
@@ -192,19 +212,24 @@ src/
 │   ├── Products/
 │   │   ├── ProductList.tsx    # Product grid with search/filter
 │   │   ├── ProductCard.tsx    # Individual product display
-│   │   └── ProductForm.tsx    # Add/edit product modal
+│   │   ├── ProductForm.tsx    # Add/edit product modal
+│   │   └── __tests__/         # Component unit tests
 │   ├── Orders/
 │   │   ├── OrderHistory.tsx   # Order list view
 │   │   └── OrderDetails.tsx   # Individual order modal
 │   ├── User/
-│   │   └── UserProfile.tsx    # Profile management
+│   │   ├── UserProfile.tsx    # Profile management
+│   │   └── __tests__/         # Component unit tests
 │   └── ShoppingCart.tsx       # Cart overlay
+├── __tests__/                 # Integration tests
 ├── features/
 │   ├── auth/authSlice.ts      # Auth Redux slice
 │   └── cart/cartSlice.ts      # Cart Redux slice
 ├── lib/
 │   ├── firebase.ts            # Firebase configuration
 │   └── firestore.ts           # Firestore CRUD operations
+├── utils/
+│   └── test-utils.tsx         # Testing utilities
 └── types/index.ts             # TypeScript interfaces
 ```
 
@@ -221,24 +246,51 @@ src/
 - **ESLint**: Code linting with React and TypeScript rules
 - **Type-only imports**: Proper TypeScript import patterns
 
+### Testing Strategy
+- **Test-Driven Development (TDD)**: Tests written before implementation
+- **Unit Tests**: Individual component testing with React Testing Library
+- **Integration Tests**: End-to-end workflow testing
+- **Mocking**: Firebase and external dependencies properly mocked
+- **Coverage**: High test coverage ensuring code reliability
+
 ### Security
 - **Firebase Security Rules**: User-specific data access controls
 - **Authentication Guards**: Protected routes and operations
 - **Input Validation**: Form validation and error handling
 
-## 🌐 Deployment
+## 🌐 Deployment & CI/CD
+
+### Automated Deployment
+The project uses GitHub Actions for continuous integration and deployment:
+
+- **CI Pipeline**: Automated testing, linting, and building on every push/PR
+- **CD Pipeline**: Automatic deployment to Vercel when tests pass
+- **Matrix Testing**: Tests run on Node.js 18.x and 20.x
+- **Quality Gates**: Deployment only occurs after all tests pass
+
+### Manual Deployment
 
 1. **Build the project**
    ```bash
    npm run build
    ```
 
-2. **Deploy to Firebase Hosting** (optional)
+2. **Deploy to Vercel** (configured)
+   - Connected via GitHub Actions
+   - Automatic deployments from main branch
+   - Environment variables configured in Vercel dashboard
+
+3. **Deploy to Firebase Hosting** (alternative)
    ```bash
    npm install -g firebase-tools
    firebase init hosting
    firebase deploy
    ```
+
+### CI/CD Configuration Files
+- `.github/workflows/main.yml` - Main CI/CD pipeline
+- `.github/workflows/pr.yml` - Pull request validation
+- `vercel.json` - Vercel deployment configuration
 
 ## 🤝 Contributing
 
@@ -273,5 +325,15 @@ This project is for educational purposes demonstrating Firebase integration with
 4. **Firebase configuration errors**
    - Verify all environment variables are set
    - Check Firebase project settings match `.env.local`
+
+5. **Tests failing**
+   - Run `npm test` to see detailed error messages
+   - Ensure all dependencies are installed with `npm ci`
+   - Check that Node.js version is 18.x or higher
+
+6. **CI/CD pipeline issues**
+   - Verify GitHub repository secrets are configured
+   - Check that Vercel project is properly connected
+   - Review GitHub Actions logs for detailed error information
 
 For more help, check the browser console for detailed error messages.
