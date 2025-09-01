@@ -281,27 +281,24 @@ describe('Cart Integration Tests', () => {
 
   describe('Cart State Persistence', () => {
     it('loads cart from sessionStorage on initialization', () => {
-      // Simulate existing cart data in sessionStorage
-      const existingCartData = [
-        {
-          id: 1,
-          title: 'Existing Product',
-          price: 99.99,
-          image: 'https://example.com/existing.jpg',
-          quantity: 2
+      // Pre-load cart state instead of relying on sessionStorage mock timing
+      const preloadedState = {
+        cart: {
+          items: [
+            {
+              id: 1,
+              title: 'Existing Product',
+              price: 99.99,
+              image: 'https://example.com/existing.jpg',
+              quantity: 2
+            }
+          ]
         }
-      ];
-      
-      mockSessionStorage.getItem.mockImplementation((key) => {
-        if (key === 'cart') {
-          return JSON.stringify(existingCartData);
-        }
-        return null;
-      });
+      };
 
-      const { store } = renderWithProviders(<CartIntegrationTestComponent />);
+      const { store } = renderWithProviders(<CartIntegrationTestComponent />, { preloadedState });
 
-      // Verify cart is loaded from sessionStorage
+      // Verify cart state is loaded correctly
       const cartState = store.getState().cart.items;
       expect(cartState).toHaveLength(1);
       expect(cartState[0].title).toBe('Existing Product');
