@@ -39,8 +39,8 @@ const LoginForm: React.FC = () => {
         setPassword('');
         // Note: setLoading(false) will be handled by AuthProvider when user state changes
       }
-    } catch (error: any) {
-      dispatch(setError(error.message));
+    } catch (error: unknown) {
+      dispatch(setError(error instanceof Error ? error.message : 'An unknown error occurred'));
       dispatch(setLoading(false));
     }
   };

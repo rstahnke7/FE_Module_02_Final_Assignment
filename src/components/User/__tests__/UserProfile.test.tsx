@@ -100,7 +100,7 @@ describe('UserProfile', () => {
       renderWithProviders(<UserProfile />, { preloadedState });
       
       await waitFor(() => {
-        expect(screen.getByText('Failed to fetch user')).toBeInTheDocument();
+        expect(screen.getByText('Failed to load user data')).toBeInTheDocument();
       });
     });
 

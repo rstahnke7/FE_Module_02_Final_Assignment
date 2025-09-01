@@ -31,8 +31,8 @@ const UserProfile: React.FC = () => {
             phone: userData.phone || '',
           });
         }
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Failed to load user data');
       } finally {
         setLoading(false);
       }
@@ -65,8 +65,8 @@ const UserProfile: React.FC = () => {
       }
       
       setIsEditing(false);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update profile');
     }
   };
 
@@ -79,8 +79,8 @@ const UserProfile: React.FC = () => {
       setError(null);
       await deleteUser(authUser.uid);
       await deleteAuthUser(authUser);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to delete account');
     }
   };
 

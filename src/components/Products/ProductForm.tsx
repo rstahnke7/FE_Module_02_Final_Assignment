@@ -59,9 +59,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
       }
       console.log('✅ Product operation successful');
       onSave();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ Product operation failed:', err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Product operation failed');
     } finally {
       setLoading(false);
     }

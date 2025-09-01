@@ -20,8 +20,8 @@ const OrderHistory: React.FC = () => {
         setError(null);
         const userOrders = await getUserOrders(user.uid);
         setOrders(userOrders);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Failed to load orders');
       } finally {
         setLoading(false);
       }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { getProducts, deleteProduct } from '../../lib/firestore';
 import type { RootState } from '../../store';
@@ -16,7 +16,7 @@ const ProductList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     if (!user) {
       setLoading(false);
       return;
@@ -26,16 +26,16 @@ const ProductList: React.FC = () => {
       setError(null);
       const productsData = await getProducts();
       setProducts(productsData);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load products');
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchProducts();
-  }, [user]); // Re-run when user authentication changes
+  }, [user, fetchProducts]); // Re-run when user authentication changes
 
   const handleDelete = async (productId: string) => {
     if (!confirm('Are you sure you want to delete this product?')) {
@@ -45,8 +45,8 @@ const ProductList: React.FC = () => {
     try {
       await deleteProduct(productId);
       setProducts(products.filter(p => p.id !== productId));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to delete product');
     }
   };
 
