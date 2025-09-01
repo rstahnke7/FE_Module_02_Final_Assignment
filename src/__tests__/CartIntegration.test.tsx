@@ -179,17 +179,23 @@ describe('Cart Integration Tests', () => {
       const user = userEvent.setup();
       renderWithProviders(<CartIntegrationTestComponent />);
 
+      // Clear previous calls to focus on the add action
+      jest.clearAllMocks();
+
       // Add product to cart
       const addToCartButtons = screen.getAllByText('Add to Cart');
       await user.click(addToCartButtons[0]);
 
-      // Verify sessionStorage was called
+      // Wait for the cart to update and then verify sessionStorage was called
       await waitFor(() => {
-        expect(mockSessionStorage.setItem).toHaveBeenCalledWith(
-          'cart',
-          expect.stringContaining('"title":"Smartphone"')
-        );
-      });
+        expect(screen.getByText(/Smartphone x 1/)).toBeInTheDocument();
+      }, { timeout: 3000 });
+
+      // Verify sessionStorage.setItem was called with cart data
+      expect(mockSessionStorage.setItem).toHaveBeenCalledWith(
+        'cart',
+        expect.stringContaining('"title":"Smartphone"')
+      );
     });
 
     it('calculates totals correctly with mixed products and quantities', async () => {

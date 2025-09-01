@@ -30,7 +30,8 @@ jest.mock('./lib/firestore', () => ({
 }));
 
 // Mock window.confirm
-global.confirm = jest.fn(() => true);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).confirm = jest.fn(() => true);
 
 // Mock sessionStorage
 const mockSessionStorage = {

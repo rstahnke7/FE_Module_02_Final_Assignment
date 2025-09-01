@@ -12,7 +12,6 @@ interface ShoppingCartProps {
 }
 
 const ShoppingCart: React.FC<ShoppingCartProps> = ({ visible, onClose }) => {
-  console.log("ShoppingCart component rendering, visible:", visible);
 
   const items = useSelector((state: RootState) => state.cart.items);
   const { user } = useSelector((state: RootState) => state.auth);
@@ -76,11 +75,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ visible, onClose }) => {
     }
   };
 
-  console.log("ShoppingCart items from Redux:", items);
-  console.log("ShoppingCart dispatch:", dispatch);
-
   if (!visible) {
-    console.log("ShoppingCart not visible, returning null");
     return null;
   }
 
@@ -143,26 +138,20 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ visible, onClose }) => {
             <div><strong>Total Price: ${totalPrice.toFixed(2)}</strong></div>
           </div>
           <ul>
-          {items.map((item) => {
-            console.log("Rendering cart item:", item);
-            return (
-              <li key={item.id} style={{ marginBottom: "8px" }}>
-                <img src={item.image} alt={item.title} width={50} height={50} />
-                <span style={{ marginLeft: "8px" }}>
-                  {item.title} x {item.quantity} 💲{item.price}
-                </span>
-                <button
-                  style={{ marginLeft: "8px" }}
-                  onClick={() => {
-                    console.log("Removing item from cart:", item.id);
-                    dispatch(removeFromCart(item.id));
-                  }}
-                >
-                  Remove
-                </button>
-              </li>
-            );
-          })}
+          {items.map((item) => (
+            <li key={item.id} style={{ marginBottom: "8px" }}>
+              <img src={item.image} alt={item.title} width={50} height={50} />
+              <span style={{ marginLeft: "8px" }}>
+                {item.title} x {item.quantity} 💲{item.price}
+              </span>
+              <button
+                style={{ marginLeft: "8px" }}
+                onClick={() => dispatch(removeFromCart(item.id))}
+              >
+                Remove
+              </button>
+            </li>
+          ))}
           </ul>
           {user ? (
             <button 
@@ -198,10 +187,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ visible, onClose }) => {
           )}
         </div>
       )}
-      <button onClick={() => {
-        console.log("Closing ShoppingCart");
-        onClose();
-      }}>Close</button>
+      <button onClick={onClose}>Close</button>
     </div>
   );
 };
