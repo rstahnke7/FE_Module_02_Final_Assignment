@@ -179,9 +179,6 @@ describe('Cart Integration Tests', () => {
       const user = userEvent.setup();
       renderWithProviders(<CartIntegrationTestComponent />);
 
-      // Clear previous calls to focus on the add action
-      jest.clearAllMocks();
-
       // Add product to cart
       const addToCartButtons = screen.getAllByText('Add to Cart');
       await user.click(addToCartButtons[0]);
