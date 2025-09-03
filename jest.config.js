@@ -1,6 +1,7 @@
 export default {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
+  testPathIgnorePatterns: ['<rootDir>/FE_Module_01_Assignment/'],
   globals: {
     'import.meta': {
       env: {

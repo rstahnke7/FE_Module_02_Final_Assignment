@@ -9,7 +9,6 @@ import {
   getDocs,
   query,
   where,
-  orderBy,
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
@@ -110,12 +109,11 @@ export const createOrder = async (orderData: Omit<Order, 'id' | 'createdAt' | 'u
 export const getUserOrders = async (userId: string): Promise<Order[]> => {
   const q = query(
     collection(db, 'orders'),
-    where('userId', '==', userId),
-    orderBy('createdAt', 'desc')
+    where('userId', '==', userId)
   );
   const querySnapshot = await getDocs(q);
   
-  return querySnapshot.docs.map(doc => {
+  const orders = querySnapshot.docs.map(doc => {
     const data = doc.data();
     return {
       id: doc.id,
@@ -123,6 +121,12 @@ export const getUserOrders = async (userId: string): Promise<Order[]> => {
       createdAt: data.createdAt?.toDate(),
       updatedAt: data.updatedAt?.toDate(),
     } as Order;
+  });
+
+  // Sort by createdAt on the client side to avoid composite index requirement
+  return orders.sort((a, b) => {
+    if (!a.createdAt || !b.createdAt) return 0;
+    return b.createdAt.getTime() - a.createdAt.getTime();
   });
 };
 
