@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
-import { getUser, updateUser, deleteUser } from '../../lib/firestore';
+import { getUser, updateUser, deleteUser, createUser } from '../../lib/firestore';
 import { deleteUser as deleteAuthUser } from 'firebase/auth';
 import type { User } from '../../types';
 
@@ -22,16 +22,33 @@ const UserProfile: React.FC = () => {
       if (!authUser) return;
       
       try {
-        const userData = await getUser(authUser.uid);
-        if (userData) {
-          setUser(userData);
-          setFormData({
-            name: userData.name,
-            address: userData.address || '',
-            phone: userData.phone || '',
-          });
+        let userData = await getUser(authUser.uid);
+        
+        // If no user document exists, create one
+        if (!userData) {
+          console.log('No user document found, creating one...');
+          const newUserData = {
+            email: authUser.email || '',
+            name: authUser.displayName || authUser.email?.split('@')[0] || 'User',
+          };
+          
+          await createUser(authUser.uid, newUserData);
+          userData = {
+            id: authUser.uid,
+            ...newUserData,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
         }
+        
+        setUser(userData);
+        setFormData({
+          name: userData.name,
+          address: userData.address || '',
+          phone: userData.phone || '',
+        });
       } catch (err: unknown) {
+        console.error('Error in fetchUser:', err);
         setError(err instanceof Error ? err.message : 'Failed to load user data');
       } finally {
         setLoading(false);
